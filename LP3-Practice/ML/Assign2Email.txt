@@ -1,0 +1,74 @@
+Assignment 2nd ML
+Classify the email using the binary classification method. Email Spam detection has two
+states: a) Normal State – Not Spam, b) Abnormal State – Spam. Use K-Nearest Neighbors and
+Support Vector Machine for classification
+
+
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load the dataset
+df = pd.read_csv('emails.csv')
+
+# Display the first few rows of the dataset
+print(df.head())
+
+# Check for any missing values
+print(df.isnull().sum())
+
+# Encode the target variable ('spam' column)
+label_encoder = LabelEncoder()
+df['spam'] = label_encoder.fit_transform(df['spam'])  # 0: Not Spam, 1: Spam
+
+# Separate features and target variable
+X = df.drop(columns=['spam'])
+y = df['spam']
+
+
+# Split the data into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Scale the features to standardize them (mean = 0, variance = 1)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+
+# K-Nearest Neighbors (KNN) Model
+knn_model = KNeighborsClassifier(n_neighbors=5)
+knn_model.fit(X_train_scaled, y_train)
+y_pred_knn = knn_model.predict(X_test_scaled)
+
+# Support Vector Machine (SVM) Model
+svm_model = SVC(kernel='linear', random_state=42)
+svm_model.fit(X_train_scaled, y_train)
+y_pred_svm = svm_model.predict(X_test_scaled)
+
+
+# KNN Model Performance
+print("K-Nearest Neighbors (KNN) Performance:")
+print("Accuracy:", accuracy_score(y_test, y_pred_knn))
+print("Classification Report:\n", classification_report(y_test, y_pred_knn))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_knn))
+
+# SVM Model Performance
+print("\nSupport Vector Machine (SVM) Performance:")
+print("Accuracy:", accuracy_score(y_test, y_pred_svm))
+print("Classification Report:\n", classification_report(y_test, y_pred_svm))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_svm))
+
+# Visualize the confusion matrices
+fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+sns.heatmap(confusion_matrix(y_test, y_pred_knn), annot=True, fmt='d', cmap='Blues', ax=ax[0])
+ax[0].set_title('KNN Confusion Matrix')
+sns.heatmap(confusion_matrix(y_test, y_pred_svm), annot=True, fmt='d', cmap='Greens', ax=ax[1])
+ax[1].set_title('SVM Confusion Matrix')
+plt.show()
